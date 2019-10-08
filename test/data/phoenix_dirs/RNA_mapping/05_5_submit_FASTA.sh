@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+parallel ::: \
+"Phoenix-sub -K -P compbiores -J workspace-1.FASTA -M 3808 -oo /research/rgs01/scratch/tartan_prod/RdUXkN3rhZ/workspace/files-05-FASTA/logs/out.%J.%I.txt -eo /research/rgs01/scratch/tartan_prod/RdUXkN3rhZ/workspace/files-05-FASTA/logs/err.%J.%I.txt -app mapping-rna-fasta -i /research/rgs01/scratch/tartan_prod/RdUXkN3rhZ/workspace/cmds-05.sh" 

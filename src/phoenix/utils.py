@@ -56,4 +56,17 @@ def get_args(argv):
 
     return args
 
+def isint(intstr):
+    """ Checks if a string is an integer.
+    Args:
+        intstr (str): A string
+    Returns: bool
+    """
+
+    try:
+        int(intstr)
+        return True
+    except ValueError:
+        return False
+
         

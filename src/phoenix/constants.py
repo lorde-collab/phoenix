@@ -2,3 +2,10 @@
 """ Constants for phoenix """
 
 SUB_UPDATE_INTERVAL = 13
+SUBSTEP_TYPES = {
+    1: 'qc',
+    2: 'hook',
+    3: 'local',
+    4: 'createcmdfile',
+    5: 'submit'
+}

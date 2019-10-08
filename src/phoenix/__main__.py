@@ -3,7 +3,7 @@
 
 import sys
 
-from phoenix import utils
+from phoenix import utils, core
 
 def main():
     """ Main routine """
@@ -11,11 +11,11 @@ def main():
     action = sys.argv[1]
 
     if action == "sub":
-        core.sub(args)
+        core.phoenix_sub(args)
     elif action == "step":
-        core.step(args)
+        core.phoenix_step(args.directory, args.step)
     elif action == "run":
-        core.run(args)
+        core.phoenix_run(args.directory, args.step, args.email_list)
     else:
         sys.exit("ERROR: Unknown action '{}'".format(action))
 
