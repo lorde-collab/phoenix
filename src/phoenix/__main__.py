@@ -13,7 +13,7 @@ def main():
     if action == "sub":
         core.phoenix_sub(args)
     elif action == "step":
-        core.phoenix_step(args.directory, args.step)
+        core.phoenix_step(args.directory, args.step, args.force)
     elif action == "run":
         core.phoenix_run(args.directory, args.step, args.email_list)
     else:

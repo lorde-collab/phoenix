@@ -1,3 +1,6 @@
+# Phoenix specific
+STEP-*.out
+STEP-*.err
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
