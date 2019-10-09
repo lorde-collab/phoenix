@@ -6,7 +6,7 @@ import sys
 import datetime
 import glob
 
-from phoenix import utils
+from phoenix import utils, psub
 
 def phoenix_run(directory, starting_step=None, force_qc=False, email_list=None):
     """ Run a phoenix pipeline.
@@ -142,3 +142,8 @@ def phoenix_step(directory, step, outfile=None, errfile=None, force_qc=False):
         ferr.close()
 
     return 0
+
+def phoenix_sub(args):
+    """ Submit and track phoenix jobs """
+    job_arrays = psub.submit_array(args)
+    failed_idx = psub.track_and_resub(job_arrays)
