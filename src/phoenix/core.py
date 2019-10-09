@@ -18,15 +18,13 @@ def phoenix_run(directory, starting_step=None, force_qc=False, email_list=None):
     Returns: None
     """
 
-
     # Argument QC
     assert os.path.isdir(directory)
-    directory = os.path.realpath(directory)
-    os.chdir(directory)
     if starting_step:
         assert isinstance(starting_step, int)
     if email_list:
         assert isinstance(email_list, list)
+    directory = os.path.realpath(directory)
 
     # Create a dict of steps and validate each step / substep
     steps = utils.get_phoenix_steps(directory)
@@ -38,6 +36,8 @@ def phoenix_run(directory, starting_step=None, force_qc=False, email_list=None):
     print("[RUNNER] Total number of steps: {}".format(len(steps)))
     print("[RUNNER] Date: ", datetime.datetime.now())
     for step in steps:
+        print("[RUNNER] {} Starting step {} / {}: {}".format(
+            datetime.datetime.now(), step, len(steps), steps[step]))
         if starting_step and starting_step > step:
             print("[RUNNER]: Skipping step {}".format(step))
             continue
@@ -57,7 +57,7 @@ def phoenix_run(directory, starting_step=None, force_qc=False, email_list=None):
             print("[RUNNER] {} Finished step {} / {}: {}".format(
                 datetime.datetime.now(), step, len(steps), steps[step]))
 
-def phoenix_step(directory, step, outfile, errfile, force_qc=False):
+def phoenix_step(directory, step, outfile=None, errfile=None, force_qc=False):
     """ Run a single phoenix step.
     Args:
         directory (str): Directory to find scripts in.
@@ -67,10 +67,10 @@ def phoenix_step(directory, step, outfile, errfile, force_qc=False):
         force_qc (bool): Whether or not to force past QC issues
     Returns: (int): Return code
     """
+    original_dir = os.getcwd()
 
     assert os.path.isdir(directory)
     directory = os.path.realpath(directory)
-    os.chdir(directory)
 
     fout = sys.stdout
     if outfile:
@@ -80,6 +80,7 @@ def phoenix_step(directory, step, outfile, errfile, force_qc=False):
         ferr = open(errfile, 'w')
 
     steps = utils.get_phoenix_steps(directory)
+    assert steps
     step_name = steps[step]
 
     print("[STEP {}] Running the following substeps:".format(step), file=fout)
@@ -108,8 +109,6 @@ def phoenix_step(directory, step, outfile, errfile, force_qc=False):
     # Process the substeps
     for substep in substeps:
         stat = "[STEP {}.{}]".format(substep[0], substep[1])
-        #step_num = substep[0]
-        #substep_num = substep[1]
         step_name = substep[2]
         substep_name = substep[3]
         if substep_name == "qc" and force_qc:
@@ -121,7 +120,9 @@ def phoenix_step(directory, step, outfile, errfile, force_qc=False):
         print("{} Date: ".format(stat), datetime.datetime.now(), file=fout)
         print("{} Running script {}".format(stat, phoenix_script), file=fout)
 
+        os.chdir(directory)
         (stdout, stderr, return_code) = utils.run_shell_command(phoenix_script)
+        os.chdir(original_dir)
         print(stdout, file=fout)
         print(stderr, file=ferr)
         if return_code != 0:
@@ -135,9 +136,9 @@ def phoenix_step(directory, step, outfile, errfile, force_qc=False):
     print("", file=fout)
     print("[STEP {}] Step successful!".format(step), file=fout)
 
-    if fout != sys.stdout:
+    if outfile:
         fout.close()
-    if ferr != sys.stderr:
+    if errfile:
         ferr.close()
 
     return 0
