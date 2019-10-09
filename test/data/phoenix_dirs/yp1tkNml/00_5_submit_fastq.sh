@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+Phoenix-sub -K -P compbiores -J yp1tkNml-post.fastq -M 500 -o /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/files-00-fastq/logs/out.%J.%I.txt -e /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/files-00-fastq/logs/err.%J.%I.txt -app mapping-rna-fasta -i /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/cmds-00.sh

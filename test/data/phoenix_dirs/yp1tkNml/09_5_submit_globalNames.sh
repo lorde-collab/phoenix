@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+Phoenix-sub -K -P compbiores -J yp1tkNml-post.globalNames -M 250 -o /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/files-09-globalNames/logs/out.%J.%I.txt -e /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/files-09-globalNames/logs/err.%J.%I.txt -app mapping-rna-names -i /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/cmds-09.sh
