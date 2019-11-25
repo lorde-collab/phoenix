@@ -61,7 +61,7 @@ class Step(unittest.TestCase):
         core.phoenix_step(directory, 1)
 
     def test_fail_step(self):
-        directory = "data/phoenix_dirs/yp1tkNml"
+        directory = "data/phoenix_dirs/yp1tkNml/workspace"
         return_code = core.phoenix_step(directory, 1)
         self.assertEqual(return_code, 1)
 

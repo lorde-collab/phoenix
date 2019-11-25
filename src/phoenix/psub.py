@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """ Phoenix 'sub' specific logic """
 
+from phoenix import batch_systems
+
 def get_scheduler(scheduler_name):
     """ Return the appropriate BatchSystem object
     Args:
@@ -10,15 +12,15 @@ def get_scheduler(scheduler_name):
     """
 
     if scheduler_name in ['local']:
-        scheduler = BatchSystem.LocalBatchSystem
+        scheduler = batch_systems.Local()
     elif scheduler_name in ['lsf', 'LSF']:
-        scheduler = BatchSystem.LSFBatchSystem
+        scheduler = batch_systems.LSF()
     elif scheduler_name in ['sge', 'SGE']:
-        scheduler = BatchSystem.SGEBatchSystem
+        scheduler = None
     elif scheduler_name in ['slurm']:
-        scheduler = BatchSystem.SlurmBatchSystem
+        scheduler = None
     elif scheduler_name in ['PBS']:
-        scheduler = BatchSystem.PBSBatchSystem
+        scheduler = None
     else:
         sys.exit("ERROR: Batch system '{}' is not yet supported"
                  "".format(scheduler_name))
@@ -38,6 +40,8 @@ def submit_array(args):
     """
     job_arrays = []
     print("Submitting job arrays from input file")
+
+    print("SYSTEM: ", args.system)
 
     scheduler = get_scheduler(args.system)
     job_arrays = scheduler.sub_array_for_cmdfile(args.input)

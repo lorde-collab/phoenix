@@ -4,6 +4,7 @@
 import sys
 
 from phoenix import utils, core
+from phoenix.batch_systems.batch_utils import detect_scheduler
 
 def main():
     """ Main routine """
@@ -11,6 +12,8 @@ def main():
     action = sys.argv[1]
 
     if action == "sub":
+        if not args.system:
+            args.system = detect_scheduler()
         core.phoenix_sub(args)
     elif action == "step":
         core.phoenix_step(args.directory, args.step, args.force)
