@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+Phoenix-sub -K -P compbiores -J yp1tkNml-post.finish -M 13000 -o $(pwd)/workspace/files-11-finish/logs/out.%J.%I.txt -e $(pwd)/workspace/files-11-finish/logs/err.%J.%I.txt -app mapping-rna-finish2 -i $(pwd)/workspace/cmds-11.sh

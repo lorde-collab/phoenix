@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+Phoenix-sub -K -P compbiores -J yp1tkNml-post.batchSim4 -M 1000 -o $(pwd)/workspace/files-07-batchSim4/logs/out.%J.%I.txt -e $(pwd)/workspace/files-07-batchSim4/logs/err.%J.%I.txt -app mapping-rna-sim4 -i $(pwd)/workspace/cmds-07.sh

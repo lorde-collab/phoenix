@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+Phoenix-sub -K -P compbiores -J yp1tkNml-post.extractRefine -M 2500 -o $(pwd)/workspace/files-10-extractRefine/logs/out.%J.%I.txt -e $(pwd)/workspace/files-10-extractRefine/logs/err.%J.%I.txt -app mapping-rna-extrref -i $(pwd)/workspace/cmds-10.sh

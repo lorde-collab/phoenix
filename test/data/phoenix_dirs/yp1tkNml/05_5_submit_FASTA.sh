@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-Phoenix-sub -K -P compbiores -J yp1tkNml-post.FASTA -M 500 -o /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/files-05-FASTA/logs/out.%J.%I.txt -e /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/files-05-FASTA/logs/err.%J.%I.txt -app mapping-rna-fasta -i /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/cmds-05.sh

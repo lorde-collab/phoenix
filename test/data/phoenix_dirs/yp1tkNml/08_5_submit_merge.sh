@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-Phoenix-sub -K -P compbiores -J yp1tkNml-post.merge -M 1500 -o /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/files-08-merge/logs/out.%J.%I.txt -e /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/files-08-merge/logs/err.%J.%I.txt -app mapping-rna-refmrg -i /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/cmds-08.sh

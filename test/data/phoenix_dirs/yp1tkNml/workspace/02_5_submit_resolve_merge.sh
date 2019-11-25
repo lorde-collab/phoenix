@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+Phoenix-sub -K -P compbiores -J yp1tkNml-post.resolve_merge -M 2500 -o $(pwd)/workspace/files-02-resolve_merge/logs/out.%J.%I.txt -e $(pwd)/workspace/files-02-resolve_merge/logs/err.%J.%I.txt -app mapping-rna-resmrg -i $(pwd)/workspace/cmds-02.sh

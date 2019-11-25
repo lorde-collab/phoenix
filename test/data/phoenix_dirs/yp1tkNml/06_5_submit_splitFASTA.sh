@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-Phoenix-sub -K -P compbiores -J yp1tkNml-post.splitFASTA -M 250 -o /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/files-06-splitFASTA/logs/out.%J.%I.txt -e /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/files-06-splitFASTA/logs/err.%J.%I.txt -app mapping-rna-splitfasta -i /research/rgs01/scratch/tartan_prod/t_7OHnDQHK/workspace/cmds-06.sh

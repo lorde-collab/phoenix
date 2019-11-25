@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+Phoenix-sub -K -P compbiores -J yp1tkNml-post.SAMExtractUnmapped -M 2500 -o $(pwd)/workspace/files-04-SAMExtractUnmapped/logs/out.%J.%I.txt -e $(pwd)/workspace/files-04-SAMExtractUnmapped/logs/err.%J.%I.txt -app mapping-rna-seu -i $(pwd)/workspace/cmds-04.sh

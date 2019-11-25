@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+Phoenix-sub -K -P compbiores -J yp1tkNml-post.finishalign -M 10000 -o $(pwd)/workspace/files-03-finishalign/logs/out.%J.%I.txt -e $(pwd)/workspace/files-03-finishalign/logs/err.%J.%I.txt -app mapping-rna-finish1 -i $(pwd)/workspace/cmds-03.sh
