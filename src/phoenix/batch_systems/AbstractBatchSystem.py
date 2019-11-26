@@ -3,8 +3,8 @@
 class AbstractBatchSystem:
     """ Generic job type """
     def __init__(self, system):
-        self.__system = system
-        self.__split_cutoff = 4000
+        self._system = system
+        self._split_cutoff = 4000
 
     def check_job_state(self, job_id):
         """ Checks on the status of a single job

@@ -44,7 +44,7 @@ def submit_array(args):
     print("SYSTEM: ", args.system)
 
     scheduler = get_scheduler(args.system)
-    job_arrays = scheduler.sub_array_for_cmdfile(args.input)
+    job_arrays = scheduler.sub_array_for_cmdfile(args)
 
     return job_arrays
 
