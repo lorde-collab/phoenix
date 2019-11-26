@@ -2,6 +2,7 @@
 """ Constants for phoenix """
 
 SUB_UPDATE_INTERVAL = 13
+MEMLIM_DEFAULT = 2513
 SUBSTEP_TYPES = {
     1: 'qc',
     2: 'hook',

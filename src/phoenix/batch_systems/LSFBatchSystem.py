@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import tempfile
+import os
 from phoenix.batch_systems import AbstractBatchSystem
 
 class LSFBatchSystem(AbstractBatchSystem):
@@ -8,6 +9,16 @@ class LSFBatchSystem(AbstractBatchSystem):
     def __init__(self):
         print("Hello from LSF!")
         super(LSFBatchSystem, self).__init__('LSF')
+
+        self.flag_params = {
+            '-P': ['project'],
+            '-J': ['jobname'],
+            '-oo': ['stdout'],
+            '-eo': ['stderr'],
+            '-app': ['app'],
+            '-q': ['queue]'],
+            '-n': ['ncores']
+        }
 
     def sub_array_for_cmdfile(self, args):
         """ Submits one or more arrays for commands in a commandfile
@@ -17,17 +28,55 @@ class LSFBatchSystem(AbstractBatchSystem):
         Returns:
             array_ids (list): List of job array ids.
         """
-
-        print("args:", args)
         argsd = args.__dict__
 
+        print("args:", args)
+
+        # Create commands for each bsub array needed
         split_cutoff = argsd.get('split_cutoff', self._split_cutoff)
-        queue = argsd.get('queue', None)
-        app = argsd.get('app', None)
-        mem_lim = argsd.get('mem_res')
-        jobname = argsd.get('jobname')
-        project = argsd.get('project')
-        outfile = argsd.get('stdout')
-        errfile = argsd.get('stderr')
+        nlines = open(args.cmdfile).read().count('\n')
+        jid_beg = 1
+        jid_end = split_cutoff
+        if nlines < split_cutoff:
+            jid_end = nlines
+        cmd = self._get_bsub_command(argsd, jid_beg, jid_end)
+        print(cmd)
+        while jid_end < nlines:
+            jid_beg = jid_end + 1
+            jid_end += split_cutoff - 1
+            if jid_end > nlines:
+                jid_end = nlines
+            cmd = self._get_bsub_command(argsd, jid_beg, jid_end)
+            print(cmd)
+
+
+    def _get_bsub_command(self, argsd, jid_beg, jid_end):
+        """ Get the bsub command needed to submit the job array
+        Args:
+            argsd (dict): Argparse Namespace turned to dict
+            jid_beg (int): Beginning job array id.
+            jid_end (int): Ending job array id.
+        Returns:
+            cmd (str): 'bsub' LSF command.
+        """
+
+        cmd = "bsub"
+        for (flag, keys) in self.flag_params.items():
+            for key in keys:
+                if key == 'jobname':
+                    jobname = argsd.get('key')
+                    if not jobname:
+                        jobname = os.path.basename(argsd['cmdfile'])
+                    cmd += " -J %s[%i-%i]"%(jobname, jid_beg, jid_end)
+                elif argsd.get(key):
+                    cmd += " {} {}".format(flag, argsd.get(key))
+
+        # NOTE: SJ specific: divide the memory limit by number of cores and
+        # specify this as the -R resource requirements for memory
+        memres = int(float(argsd['memlim'])/float(argsd['ncores']))
+        cmd += ' -R "span[hosts=1]" -R "rusage[mem={}]"'.format(memres)
+        cmd += '"sub_line_from_file_lsf.sh {}"'.format(argsd['cmdfile'])
+
+        return cmd
 
 

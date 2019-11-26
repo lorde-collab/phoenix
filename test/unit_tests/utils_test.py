@@ -58,8 +58,8 @@ class Argparser(unittest.TestCase):
     """ Test argparse options """
     def test_ok_sub(self):
         argv = ['sub', '-P', 'project', '-q', 'normal', '-n', '5', '-K',
-                '-s', 'LSF', '-o', 'out.%J.%I.txt', '-e', 'err.%J.%I.txt',
-                '-i', 'cmds.sh']
+                '-s', 'LSF', '-M', '500', '-o', 'out.%J.%I.txt', '-e',
+                'err.%J.%I.txt', '-i', 'cmds.sh']
 
         args = utils.get_args(argv)
         self.assertEqual(args.project, 'project')
@@ -69,7 +69,7 @@ class Argparser(unittest.TestCase):
         self.assertEqual(args.system, 'LSF')
         self.assertEqual(args.stdout, 'out.%J.%I.txt')
         self.assertEqual(args.stderr, 'err.%J.%I.txt')
-        self.assertEqual(args.input, 'cmds.sh')
+        self.assertEqual(args.cmdfile, 'cmds.sh')
 
     def test_ok_step(self):
         argv = ['step', '-d', '/path/to/dir', '-s', '001']

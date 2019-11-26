@@ -9,7 +9,8 @@ import subprocess
 
 from phoenix import __version__
 from phoenix.batch_systems import batch_utils
-from phoenix.constants import SUB_UPDATE_INTERVAL, SUBSTEP_TYPES
+from phoenix.constants import (
+    SUB_UPDATE_INTERVAL, SUBSTEP_TYPES, MEMLIM_DEFAULT)
 
 def get_args(argv):
     """ Get arguments
@@ -33,12 +34,12 @@ def get_args(argv):
     sub.add_argument("-a", "--app", type=str)
     sub.add_argument("-q", "--queue", type=str)
     sub.add_argument("-n", "--ncores", type=int, default=1)
-    sub.add_argument("-M", "--memlim", type=int)
+    sub.add_argument("-M", "--memlim", type=int, default=MEMLIM_DEFAULT)
     sub.add_argument("-K", "--hang", action="store_true")
     sub.add_argument("-s", "--system", type=str, default="")
     sub.add_argument("-o", "--stdout", type=str, required=True)
     sub.add_argument("-e", "--stderr", type=str, required=True)
-    sub.add_argument("-i", "--input", type=str, required=True)
+    sub.add_argument("-i", "--input", dest="cmdfile", type=str, required=True)
     sub.add_argument("-u", "--update_interval", type=int,
                      default=SUB_UPDATE_INTERVAL)
 
