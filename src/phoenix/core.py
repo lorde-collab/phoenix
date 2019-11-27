@@ -35,7 +35,7 @@ def phoenix_run(directory, starting_step=None, force_qc=False, email_list=None):
     # Run each step
     print("[RUNNER] Total number of steps: {}".format(len(steps)))
     print("[RUNNER] Date: ", datetime.datetime.now())
-    for step in steps:
+    for step in sorted(steps.keys()):
         print("[RUNNER] {} Starting step {} / {}: {}".format(
             datetime.datetime.now(), step, len(steps), steps[step]))
         if starting_step and starting_step > step:

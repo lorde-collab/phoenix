@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ Phoenix 'sub' specific logic """
+import sys
 
 from phoenix import batch_systems
 
@@ -40,8 +41,6 @@ def submit_array(args):
     """
     job_arrays = []
     print("Submitting job arrays from input file")
-
-    print("SYSTEM: ", args.system)
 
     scheduler = get_scheduler(args.system)
     job_arrays = scheduler.sub_array_for_cmdfile(args)

@@ -6,6 +6,7 @@ import glob
 import os
 import shlex
 import subprocess
+import sys
 
 from phoenix import __version__
 from phoenix.batch_systems import batch_utils
@@ -113,19 +114,22 @@ def get_phoenix_steps(phoenix_directory):
             phoenix_steps[step] = step_name
     return phoenix_steps
 
-def run_shell_command(command_string):
+def run_shell_command(command_string, shell=False):
     """ Executes a command and returns stdout, stderr, return_code.
     Args:
         command_string: Command to be executed
+        shell (bool): Whether or not to use shell
     Returns:
         stdout: stdout of command as a single string.
         stderr: stderr of command as a single string.
         return_code: integer return code of command.
     """
     command = shlex.split(command_string)
+    if shell:
+        command = command_string
     try:
         proc = subprocess.run(command, stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
+                              stderr=subprocess.PIPE, shell=shell)
     except FileNotFoundError:
         stdout = ""
         stderr = "Command '%s' not found"%(command[0])
@@ -137,3 +141,32 @@ def run_shell_command(command_string):
     return_code = proc.returncode
 
     return (stdout, stderr, return_code)
+
+def run_shell_command_wrapper(cmds_and_io):
+    """ Wrapper to 'run_shell_command' to be used with multiprocessing.Pool
+    Args:
+        cmds_and_io (list):
+            - cmds (list): Commands to run.
+            - outfiles (list): STDOUT for each command.
+            - errfiles (list): STDOUT for each command.
+    Returns: None
+    """
+
+    cmd = cmds_and_io[0]
+    outfile = cmds_and_io[1]
+    errfile = cmds_and_io[2]
+
+    fout = open(str(outfile), "w")
+    ferr = open(str(errfile), "w")
+
+    # NOTE: Obviously shell injection could be a concern here. However,
+    # we need to allow for compound ('&&') commands to be entered in the
+    # cmds file so need to execute each command 'as-is'
+    (stdout, stderr, return_code) = run_shell_command(cmd, shell=True)
+
+    print(stdout, file=fout)
+    print(stderr, file=ferr)
+
+    fout.close()
+    ferr.close()
+    
