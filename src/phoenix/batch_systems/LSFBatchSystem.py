@@ -3,8 +3,9 @@
 import tempfile
 import os
 import sys
+import datetime
 from phoenix import utils
-from phoenix.batch_systems import AbstractBatchSystem
+from phoenix.batch_systems import AbstractBatchSystem, AbstractJob
 
 class LSFBatchSystem(AbstractBatchSystem):
     """ LSF Batch System class """
@@ -31,6 +32,7 @@ class LSFBatchSystem(AbstractBatchSystem):
             array_ids (list): List of job array ids.
         """
         argsd = args.__dict__
+        array_ids = []
 
         print("args:", args)
 
@@ -44,6 +46,9 @@ class LSFBatchSystem(AbstractBatchSystem):
         cmd = self._get_bsub_command(argsd, jid_beg, jid_end)
         print(cmd)
         (stdout, stderr, return_code) = utils.run_shell_command(cmd)
+        # NOTE: ST Jude specific LSF output:
+        # "Job <JOBID> is submitted to queue <QUEUE>"
+        array_ids.append(stdout.split('<')[1].split('>')[0])
         while jid_end < nlines:
             jid_beg = jid_end + 1
             jid_end += split_cutoff - 1
@@ -52,8 +57,11 @@ class LSFBatchSystem(AbstractBatchSystem):
             cmd = self._get_bsub_command(argsd, jid_beg, jid_end)
             print(cmd)
             (stdout, stderr, return_code) = utils.run_shell_command(cmd)
+            array_ids.append(stdout.split('<')[1].split('>')[0])
 
-    def jobs_from_arrays(job_arrays):
+        return array_ids
+
+    def jobs_from_arrays(self, job_arrays):
         """ Creates a set of Jobs from the verbose output of the arrays.
         Args:
             array_ids (list): List of Job array ids.
@@ -61,9 +69,38 @@ class LSFBatchSystem(AbstractBatchSystem):
             jobs (dict): Dictionary of Job objects.
         """
 
+        jobs = {}
 
+        for job_array in job_arrays:
+            jobs.update(self.jobs_from_array(job_array))
 
+        return jobs
 
+    def jobs_from_array(self, job_array):
+        """ Creates a set of Jobs from the verbose output of the arrays.
+        Args:
+            array_ids (int): Array id.
+        Returns:
+            jobs (dict): Dictionary of Job objects.
+        """
+        cmd = "bjobs -al {}".format(job_array)
+        (stdout, stderr, return_code) = utils.run_shell_command(cmd)
+        outlines = stdout.replace("\n                     ", "").splitlines()
+
+        jobs = {}
+
+        joblines = []
+        for line in outlines:
+            if '---' in line:
+                print("Job!")
+                job = LSFJob()
+                job.from_bjobs(joblines)
+                jobs[(job.jobid, job.jobindex)] = job
+                joblines = []
+            else:
+                joblines.append(line)
+
+        return jobs
 
     def _get_bsub_command(self, argsd, jid_beg, jid_end):
         """ Get the bsub command needed to submit the job array
@@ -94,4 +131,40 @@ class LSFBatchSystem(AbstractBatchSystem):
 
         return cmd
 
+class LSFJob(AbstractJob):
+    """ LSF Job """
+    def __init__(self):
+        super(LSFJob, self).__init__('LSF')
+
+        self.__rusage = None
+
+    def from_bjobs(self, joblines):
+        """ Fill in information about the job from LSF bjobs output
+        Args:
+            joblines (list): List of lines from LSF 'bjobs -al' output.
+        Returns: None
+        """
+
+        year = datetime.datetime.now().year
+
+        for line in joblines:
+            print(line)
+            if 'Job <' in line:
+                self.jobid = int(line.split('Job <')[1].split('[')[0])
+                self.jobindex = int(line.split('Job <')[1].split('[')[1]\
+                                                          .split(']')[0])
+            if 'User <' in line:
+                self.user = line.split('User <')[1].split('>')
+            if 'Project <' in line:
+                self.project = line.split('Project <')[1].split('>')
+            if 'Status <' in line:
+                self.status = line.split('Status <')[1].split('>')
+            if 'Queue <' in line:
+                self.queue = line.split('Queue <')[1].split('>')
+            # TODO: memreq
+            # TODO: memlim
+            # TODO: ncores
+            # TODO: stdout
+            # TODO: stderr
+            # TODO: name
 

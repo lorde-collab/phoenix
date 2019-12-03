@@ -34,6 +34,16 @@ class AbstractBatchSystem:
         """
         raise NotImplementedError()
 
+    def jobs_from_array(self, array_id):
+        """ Creates a set of Jobs from the verbose output of the arrays.
+        Args:
+            array_ids (int): Array id.
+        Returns:
+            jobs (dict): Dictionary of Job objects.
+        """
+        raise NotImplementedError()
+
+
     def sub_array_for_cmdfile(self, cmdfile, **kwargs):
         """ Submits one or more arrays for commands in a commandfile
         Args:
@@ -43,26 +53,56 @@ class AbstractBatchSystem:
         """
         raise NotImplementedError()
 
-'''
 class AbstractJob:
     """ Generic job type """
     def __init__(self, system):
         self.__jobid = None
         self.__jobindex = None
+        self.__queue = None
+        self.__user = None
+        self.__project = None
+        self.__name = None
+        self.__memreq = None
+        self.__memlim = None
+        self.__ncores = None
+        self.__stdout = None
+        self.__stderr = None
+        # TODO: Submit date
+        # TODO: Dispatch date
+        # TODO: End date
 
     @property
     def jobid(self):
         return self.__jobid
     @jobid.setter
     def jobid(self, jobid):
-        self.__jobid == jobid
+        self.__jobid = jobid
 
     @property
     def jobindex(self):
         return self.__jobindex
     @jobindex.setter
     def jobindex(self, jobindex):
-        self.__jobindex == jobindex
-'''
+        self.__jobindex = jobindex
 
+    @property
+    def queue(self):
+        return self.__queue
+    @queue.setter
+    def queue(self, queue):
+        self.__queue = queue
+
+    @property
+    def user(self):
+        return self.__user
+    @user.setter
+    def user(self, user):
+        self.__user = user
+
+    @property
+    def name(self):
+        return self.__name
+    @name.setter
+    def name(self, name):
+        self.__name = name
             

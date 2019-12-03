@@ -146,4 +146,4 @@ def phoenix_step(directory, step, outfile=None, errfile=None, force_qc=False):
 def phoenix_sub(args):
     """ Submit and track phoenix jobs """
     job_arrays = psub.submit_array(args)
-    failed_idx = psub.track_and_resub(job_arrays)
+    failed_idx = psub.track_and_resub(args, job_arrays)
