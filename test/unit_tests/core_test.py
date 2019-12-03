@@ -38,6 +38,9 @@ class Run(unittest.TestCase):
     @unittest.expectedFailure
     def test_fail_run_qc(self):
         directory = "data/phoenix_dirs/simple_example"
+        os.remove(directory + "/*.tmp")
+        os.remove(directory + "/*.out")
+        os.remove(directory + "/*.err")
         core.phoenix_run(directory, starting_step=1)
 
     def test_successful_run(self):

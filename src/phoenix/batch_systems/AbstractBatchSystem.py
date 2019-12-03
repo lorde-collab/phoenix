@@ -15,16 +15,6 @@ class AbstractBatchSystem:
         """
         raise NotImplementedError()
 
-    def check_array_state(self, array_id):
-        """ Checks on the status of a job array
-        Args:
-            array_id (int): Job array id.
-        Returns:
-            states (list): List of states as strings (Pend, Run, Done, Fail) of
-                each of the indices from the array
-        """
-        raise NotImplementedError()
-
     def verbose_array_state(self, array_id):
         """ Checks the state of the array with verbosity.
         Args:
@@ -35,10 +25,10 @@ class AbstractBatchSystem:
         """
         raise NotImplementedError()
 
-    def jobs_from_array_state(self, array_id):
-        """ Creates a set of Jobs from the verbose output of the array state.
+    def jobs_from_arrays(self, array_ids):
+        """ Creates a set of Jobs from the verbose output of the arrays.
         Args:
-            array_id (int): Job array id.
+            array_ids (list): List of Job array id.
         Returns:
             jobs (dict): Dictionary of Job objects.
         """

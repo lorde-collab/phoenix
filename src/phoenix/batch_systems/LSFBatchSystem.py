@@ -2,6 +2,8 @@
 
 import tempfile
 import os
+import sys
+from phoenix import utils
 from phoenix.batch_systems import AbstractBatchSystem
 
 class LSFBatchSystem(AbstractBatchSystem):
@@ -41,6 +43,7 @@ class LSFBatchSystem(AbstractBatchSystem):
             jid_end = nlines
         cmd = self._get_bsub_command(argsd, jid_beg, jid_end)
         print(cmd)
+        (stdout, stderr, return_code) = utils.run_shell_command(cmd)
         while jid_end < nlines:
             jid_beg = jid_end + 1
             jid_end += split_cutoff - 1
@@ -48,6 +51,18 @@ class LSFBatchSystem(AbstractBatchSystem):
                 jid_end = nlines
             cmd = self._get_bsub_command(argsd, jid_beg, jid_end)
             print(cmd)
+            (stdout, stderr, return_code) = utils.run_shell_command(cmd)
+
+    def jobs_from_arrays(job_arrays):
+        """ Creates a set of Jobs from the verbose output of the arrays.
+        Args:
+            array_ids (list): List of Job array ids.
+        Returns:
+            jobs (dict): Dictionary of Job objects.
+        """
+
+
+
 
 
     def _get_bsub_command(self, argsd, jid_beg, jid_end):
@@ -75,7 +90,7 @@ class LSFBatchSystem(AbstractBatchSystem):
         # specify this as the -R resource requirements for memory
         memres = int(float(argsd['memlim'])/float(argsd['ncores']))
         cmd += ' -R "span[hosts=1]" -R "rusage[mem={}]"'.format(memres)
-        cmd += '"sub_line_from_file_lsf.sh {}"'.format(argsd['cmdfile'])
+        cmd += ' "sub_line_from_file_lsf.sh {}"'.format(argsd['cmdfile'])
 
         return cmd
 

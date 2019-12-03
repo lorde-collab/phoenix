@@ -48,12 +48,18 @@ def submit_array(args):
     return job_arrays
 
 def track_and_resub(job_arrays):
-    """ Track job arrays and resubmit any individual element which fails
+    """ Track job arrays and resubmit any individual elements which fail
     Args:
         job_arrays (list): List of integers.
     Returns:
-        failed_index (int): Index of array(s) which failed or None.
+        failed_indices (list): List of jobids which failed.
     """
 
-    return None
+    print("job arrays: ", job_arrays)
+
+    jobs = jobs_from_arrays(job_arrays)
+
+    sys.exit(1)
+
+    return []
 
