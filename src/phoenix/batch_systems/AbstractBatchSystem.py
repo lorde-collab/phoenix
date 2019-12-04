@@ -60,16 +60,9 @@ class AbstractJob:
         self.__jobindex = None
         self.__queue = None
         self.__user = None
-        self.__project = None
-        self.__name = None
-        self.__memreq = None
-        self.__memlim = None
-        self.__ncores = None
-        self.__stdout = None
-        self.__stderr = None
-        # TODO: Submit date
-        # TODO: Dispatch date
-        # TODO: End date
+
+    def __str__(self):
+        raise NotImplementedError()
 
     @property
     def jobid(self):
@@ -100,9 +93,15 @@ class AbstractJob:
         self.__user = user
 
     @property
-    def name(self):
-        return self.__name
-    @name.setter
-    def name(self, name):
-        self.__name = name
-            
+    def project(self):
+        return self.__project
+    @project.setter
+    def project(self, project):
+        self.__project = project
+
+    @property
+    def status(self):
+        return self.__status
+    @status.setter
+    def status(self, status):
+        self.__status = status

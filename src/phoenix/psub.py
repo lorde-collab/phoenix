@@ -60,6 +60,9 @@ def track_and_resub(args, job_arrays):
     scheduler = get_scheduler(args.system)
     jobs = scheduler.jobs_from_arrays(job_arrays)
 
+    for (key, job) in jobs.items():
+        print("***\n", job)
+
     sys.exit(1)
 
     return []

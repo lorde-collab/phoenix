@@ -92,7 +92,6 @@ class LSFBatchSystem(AbstractBatchSystem):
         joblines = []
         for line in outlines:
             if '---' in line:
-                print("Job!")
                 job = LSFJob()
                 job.from_bjobs(joblines)
                 jobs[(job.jobid, job.jobindex)] = job
@@ -136,7 +135,15 @@ class LSFJob(AbstractJob):
     def __init__(self):
         super(LSFJob, self).__init__('LSF')
 
-        self.__rusage = None
+        self.__resreq = None
+
+        self._funkeys = {
+            "user": ("User <", ">"),
+            "queue": ("Queue <", ">"),
+            "project": ("Project <", ">"),
+            "status": ("Status <", ">"),
+            "resreq": ("Requested Resources <", ">")
+        }
 
     def from_bjobs(self, joblines):
         """ Fill in information about the job from LSF bjobs output
@@ -148,23 +155,31 @@ class LSFJob(AbstractJob):
         year = datetime.datetime.now().year
 
         for line in joblines:
-            print(line)
             if 'Job <' in line:
                 self.jobid = int(line.split('Job <')[1].split('[')[0])
                 self.jobindex = int(line.split('Job <')[1].split('[')[1]\
                                                           .split(']')[0])
-            if 'User <' in line:
-                self.user = line.split('User <')[1].split('>')
-            if 'Project <' in line:
-                self.project = line.split('Project <')[1].split('>')
-            if 'Status <' in line:
-                self.status = line.split('Status <')[1].split('>')
-            if 'Queue <' in line:
-                self.queue = line.split('Queue <')[1].split('>')
-            # TODO: memreq
-            # TODO: memlim
-            # TODO: ncores
-            # TODO: stdout
-            # TODO: stderr
-            # TODO: name
+            for (fun, key) in self._funkeys.items():
+                if key[0] in line:
+                    val = line.split(key[0])[1].split(key[1])[0]
+                    setattr(self, fun, val)
+
+    def __str__(self):
+        rstring = "Job {}".format(self.jobid)
+        if self.jobindex:
+            rstring += "[{}]\n".format(self.jobindex)
+        else:
+            rstring += "\n"
+        for fun in sorted(list(self._funkeys.keys())):
+            val = getattr(self, fun)
+            rstring += "{}: {}\n".format(fun, val)
+
+        return rstring
+
+    @property
+    def resreq(self):
+        return self.__resreq
+    @resreq.setter
+    def resreq(self, resreq):
+        self.__resreq = resreq
 
