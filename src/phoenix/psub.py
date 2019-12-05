@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """ Phoenix 'sub' specific logic """
 import sys
+import time
 
 from phoenix import batch_systems
+from phoenix import utils
 
 def get_scheduler(scheduler_name):
     """ Return the appropriate BatchSystem object
@@ -47,6 +49,20 @@ def submit_array(args):
 
     return job_arrays
 
+def job_array_unfinished(jobs, killall):
+    """ Check the status of 'jobs' dictionary and decide if the array is
+        finished or not.
+    Args:
+        jobs (dict): Job dictionary with key [jobid, jobindex]
+        killall (bool): Whether or not to kill array after first failure.
+    Returns: bool
+    """
+    for jobid in jobs:
+        job = jobs[jobid]
+        if not job.finished:
+            return True
+    return False
+
 def track_and_resub(args, job_arrays):
     """ Track job arrays and resubmit any individual elements which fail
     Args:
@@ -60,10 +76,74 @@ def track_and_resub(args, job_arrays):
     scheduler = get_scheduler(args.system)
     jobs = scheduler.jobs_from_arrays(job_arrays)
 
+    '''
     for (key, job) in jobs.items():
         print("***\n", job)
+    '''
 
-    sys.exit(1)
+    sys.stdout.flush()
+
+    # Loop until all jobs are finished, or a single job has failed and the
+    # killall option is specified.
+    checked_once = False
+    while job_array_unfinished(jobs, args.killall) or not checked_once:
+        checked_once = True
+        sys.stdout.flush()
+
+        tjobs = scheduler.jobs_from_arrays(job_arrays)
+        sys.stdout.flush()
+        npend = 0
+        nrequeued = 0
+        nrun = 0
+        ndone = 0
+        nfailed = 0
+        for jkey in jobs:
+            job = jobs[jkey]
+            if job.exit_success:
+                # Job has already finished previously. Check next job.
+                ndone += 1
+                continue
+            elif job.exit_failure:
+                # Job has already failed previously. Check next job.
+                nfailed += 1
+                continue
+
+            tjob = tjobs[jkey]
+
+            # Update 'jobs' dict
+            jobs[jkey] = tjob
+            job = tjob
+
+            # If we have made it this far then the last time we checked the
+            # job was not in DONE or EXIT state.
+            if job.pending:
+                npend += 1
+            elif job.running:
+                nrun += 1
+            elif job.exit_success:
+                ndone += 1
+            elif job.exit_failure:
+                # Job exited since the last time we checked ... deal with it
+                print("[WARN] {} job {}[{}] has exited with code {}".format(
+                    utils.now(), job.jobid, job.jobindex, job.exit_code))
+                print("       Failure reason: {}".format(job.exit_reason))
+                if job.recover():
+                    nrequeued += 1
+                else:
+                    nfailed += 1
+            else:
+                # TODO: Print warning about unknown status of job here
+                print("TODO: Print warning about unknown status of job")
+
+        print("[UPDATE] {0:s} nPEND nRUN nDONE nREQUEUE nFAIL = {1:5d} "\
+              "{2:5d} {3:5d} {4:5d} {5:5d}".format(
+                  utils.now().strftime("%Y-%m-%d %H:%M:%S"), npend, nrun,
+                  ndone, nrequeued, nfailed))
+
+
+        # TODO: Print update?
+        sys.stdout.flush()
+        time.sleep(args.update_interval)
 
     return []
 

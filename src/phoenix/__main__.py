@@ -18,7 +18,7 @@ def main():
             args.jobname = os.path.basename(args.cmdfile)
         core.phoenix_sub(args)
     elif action == "step":
-        core.phoenix_step(args.directory, args.step, args.force)
+        core.phoenix_step(args.directory, args.step, args.force_qc)
     elif action == "run":
         core.phoenix_run(args.directory, args.step, args.email_list)
     else:

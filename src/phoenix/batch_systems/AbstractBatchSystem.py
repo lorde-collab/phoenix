@@ -6,6 +6,13 @@ class AbstractBatchSystem:
         self._system = system
         self._split_cutoff = 4000
 
+        self.__fail_exit_reasons = []
+
+    # If the job failed due to these reasons, consider it unrecoverable
+    @property
+    def fail_exit_reasons(self):
+        raise NotImplementedError()
+
     def check_job_state(self, job_id):
         """ Checks on the status of a single job
         Args:
@@ -61,9 +68,56 @@ class AbstractJob:
         self.__queue = None
         self.__user = None
 
+        # By default we don't know if it exited or not.
+        self.__exit_reason = "?"
+        self.__exit_code = "?"
+
     def __str__(self):
         raise NotImplementedError()
 
+    def recover(self):
+        """ Attempt to recover the job.
+        Args: None
+        Returns:
+            bool: Whether or not the job was recovered.
+        """
+        raise NotImplementedError()
+
+    # Whether or not this job should be considered finished (not recoverable)
+    @property
+    def finished(self):
+        raise NotImplementedError()
+
+    # Why the job exited
+    @property
+    def exit_reason(self):
+        if self.exit_success or self.exit_failure:
+            return self.__exit_reason
+        else:
+            return None
+    @exit_reason.setter
+    def exit_reason(self, exit_reason):
+        self.__exit_reason = exit_reason
+
+    ###############################################
+    ### Common parlance for all scheduler types ###
+    ###############################################
+    @property
+    def pending(self):
+        raise NotImplementedError()
+    @property
+    def running(self):
+        raise NotImplementedError()
+    @property
+    def exit_success(self):
+        raise NotImplementedError()
+    @property
+    def exit_failure(self):
+        raise NotImplementedError()
+
+    #######################################################################
+    ### Generic Job properties directly accessible via queueing systems ###
+    #######################################################################
     @property
     def jobid(self):
         return self.__jobid
@@ -105,3 +159,14 @@ class AbstractJob:
     @status.setter
     def status(self, status):
         self.__status = status
+
+    @property
+    def exit_code(self):
+        if self.exit_success or self.exit_failure:
+            return self.__exit_code
+        else:
+            return None
+    @exit_code.setter
+    def exit_code(self, exit_code):
+        self.__exit_code = exit_code
+

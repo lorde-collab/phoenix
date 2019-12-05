@@ -7,11 +7,17 @@ import os
 import shlex
 import subprocess
 import sys
+import datetime
 
 from phoenix import __version__
 from phoenix.batch_systems import batch_utils
 from phoenix.constants import (
     SUB_UPDATE_INTERVAL, SUBSTEP_TYPES, MEMLIM_DEFAULT)
+
+def now():
+    """ Simple method to get current datetime """
+    return datetime.datetime.now()
+
 
 def get_args(argv):
     """ Get arguments
@@ -37,6 +43,7 @@ def get_args(argv):
     sub.add_argument("-n", "--ncores", type=int, default=1)
     sub.add_argument("-M", "--memlim", type=int, default=MEMLIM_DEFAULT)
     sub.add_argument("-K", "--hang", action="store_true")
+    sub.add_argument("-k", "--killall", action="store_true")
     sub.add_argument("-s", "--system", type=str, default="")
     sub.add_argument("-o", "--stdout", type=str, required=True)
     sub.add_argument("-e", "--stderr", type=str, required=True)

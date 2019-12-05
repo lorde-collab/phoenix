@@ -13,7 +13,7 @@ class LSFBatchSystem(AbstractBatchSystem):
         print("Hello from LSF!")
         super(LSFBatchSystem, self).__init__('LSF')
 
-        self.flag_params = {
+        self.__flag_params = {
             '-P': ['project'],
             '-J': ['jobname'],
             '-oo': ['stdout'],
@@ -35,6 +35,9 @@ class LSFBatchSystem(AbstractBatchSystem):
         array_ids = []
 
         print("args:", args)
+        for eo_file in [args.stdout, args.stderr]:
+            logdir = os.path.dirname(eo_file)
+            os.makedirs(logdir, exist_ok=True)
 
         # Create commands for each bsub array needed
         split_cutoff = argsd.get('split_cutoff', self._split_cutoff)
@@ -98,6 +101,10 @@ class LSFBatchSystem(AbstractBatchSystem):
                 joblines = []
             else:
                 joblines.append(line)
+        job = LSFJob()
+        job.from_bjobs(joblines)
+        jobs[(job.jobid, job.jobindex)] = job
+
 
         return jobs
 
@@ -112,7 +119,7 @@ class LSFBatchSystem(AbstractBatchSystem):
         """
 
         cmd = "bsub"
-        for (flag, keys) in self.flag_params.items():
+        for (flag, keys) in self.__flag_params.items():
             for key in keys:
                 if key == 'jobname':
                     jobname = argsd.get('key')
@@ -136,14 +143,65 @@ class LSFJob(AbstractJob):
         super(LSFJob, self).__init__('LSF')
 
         self.__resreq = None
+        self.__joblines = []
 
-        self._funkeys = {
-            "user": ("User <", ">"),
-            "queue": ("Queue <", ">"),
-            "project": ("Project <", ">"),
-            "status": ("Status <", ">"),
-            "resreq": ("Requested Resources <", ">")
+        self._keyfuns = {
+            ("User <", ">"): "user",
+            ("Queue <", ">"): "queue",
+            ("Project <", ">"): "project",
+            ("Status <", ">"): "status",
+            ("Requested Resources <", ">"): "resreq",
+            ("Exited with exit code ", "."): "exit_code",
+            ("Exited by LSF signal ", "."): "exit_code",
+            ("Completed <exit>; ", ":"): "exit_reason"
         }
+
+        self.__run_pend_statuses = ['RUN', 'PEND']
+        self.__recoverable_reasons = ["TERM_MEMLIMIT"]
+
+    def recover(self):
+        """ Attempt to recover the job.
+        Args: None
+        Returns:
+            bool: Whether or not the job was recovered.
+        """
+        assert self.exit_failure, "ERROR: Trying to recover an unfailed job"
+
+        if self.exit_reason == "?":
+            return False
+        elif self.exit_reason not in self.__recoverable_reasons:
+            print("Cannot recover job which failed due to {}"\
+                  .format(self.exit_reason))
+            return False
+        elif self.exit_reason == "TERM_MEMLIMIT":
+            print("Working to recover job failed due to memory limit")
+            sys.exit(1)
+
+    @property
+    def finished(self):
+        if self.status in self.__run_pend_statuses:
+            # Running or pending ... NOT finished
+            return False
+        elif self.status == 'EXIT' and \
+            self.exit_reason in self.__recoverable_reasons:
+            # Failed but recoverable ... NOT finished
+            return False
+
+        # Status not in RUN or PEND, and it is recoverable ... finished
+        return True
+
+    @property
+    def pending(self):
+        return self.status == "PEND"
+    @property
+    def running(self):
+        return self.status == "RUN"
+    @property
+    def exit_success(self):
+        return self.status == "DONE"
+    @property
+    def exit_failure(self):
+        return self.status == "EXIT"
 
     def from_bjobs(self, joblines):
         """ Fill in information about the job from LSF bjobs output
@@ -151,26 +209,39 @@ class LSFJob(AbstractJob):
             joblines (list): List of lines from LSF 'bjobs -al' output.
         Returns: None
         """
+        self.__joblines = joblines
 
         year = datetime.datetime.now().year
 
-        for line in joblines:
+        for line in self.__joblines:
+            '''
+            if 'loadSched' not in line and 'loadStop' not in line and line and not '          ' in line:
+                print(line)
+            '''
             if 'Job <' in line:
                 self.jobid = int(line.split('Job <')[1].split('[')[0])
                 self.jobindex = int(line.split('Job <')[1].split('[')[1]\
                                                           .split(']')[0])
-            for (fun, key) in self._funkeys.items():
+            for (key, fun) in self._keyfuns.items():
                 if key[0] in line:
                     val = line.split(key[0])[1].split(key[1])[0]
                     setattr(self, fun, val)
 
     def __str__(self):
-        rstring = "Job {}".format(self.jobid)
+        rstring = ""
+        #for jobline in self.__joblines:
+        #    rstring += jobline+"\n"
+        rstring += "Job {}".format(self.jobid)
         if self.jobindex:
             rstring += "[{}]\n".format(self.jobindex)
         else:
             rstring += "\n"
-        for fun in sorted(list(self._funkeys.keys())):
+        funs = []
+        for key in sorted(list(self._keyfuns.keys())):
+            fun = self._keyfuns[key]
+            funs.append(fun)
+
+        for fun in sorted(list(set(funs))):
             val = getattr(self, fun)
             rstring += "{}: {}\n".format(fun, val)
 
