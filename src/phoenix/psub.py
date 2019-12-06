@@ -37,7 +37,7 @@ def submit_array(args):
         args (Namespace): Argparse object which has the following fields:
             - project
             - jobname
-            ... list here ... 
+            ... list here ...
     Returns:
         job_arrays (list): List of integers relating to job arrays.
     """
@@ -49,12 +49,11 @@ def submit_array(args):
 
     return job_arrays
 
-def job_array_unfinished(jobs, killall):
+def job_array_unfinished(jobs):
     """ Check the status of 'jobs' dictionary and decide if the array is
         finished or not.
     Args:
         jobs (dict): Job dictionary with key [jobid, jobindex]
-        killall (bool): Whether or not to kill array after first failure.
     Returns: bool
     """
     for jobid in jobs:
@@ -76,21 +75,18 @@ def track_and_resub(args, job_arrays):
     scheduler = get_scheduler(args.system)
     jobs = scheduler.jobs_from_arrays(job_arrays)
 
-    '''
-    for (key, job) in jobs.items():
-        print("***\n", job)
-    '''
-
     sys.stdout.flush()
 
     # Loop until all jobs are finished, or a single job has failed and the
     # killall option is specified.
     checked_once = False
-    while job_array_unfinished(jobs, args.killall) or not checked_once:
+    while job_array_unfinished(jobs) or not checked_once:
         checked_once = True
         sys.stdout.flush()
 
         tjobs = scheduler.jobs_from_arrays(job_arrays)
+        for (k, tjob) in tjobs.items():
+            print(k, tjob)
         sys.stdout.flush()
         npend = 0
         nrequeued = 0
@@ -132,8 +128,8 @@ def track_and_resub(args, job_arrays):
                 else:
                     nfailed += 1
             else:
-                # TODO: Print warning about unknown status of job here
-                print("TODO: Print warning about unknown status of job")
+                print("[WARN] {} job {}[{}] has unknown status {}".format(
+                    utils.now(), job.jobid, job.jobindex, job.status))
 
         print("[UPDATE] {0:s} nPEND nRUN nDONE nREQUEUE nFAIL = {1:5d} "\
               "{2:5d} {3:5d} {4:5d} {5:5d}".format(
@@ -141,9 +137,7 @@ def track_and_resub(args, job_arrays):
                   ndone, nrequeued, nfailed))
 
 
-        # TODO: Print update?
         sys.stdout.flush()
         time.sleep(args.update_interval)
 
     return []
-

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """ Main phoenix entry point """
 
-import sys, os
+import sys
+import os
 
 from phoenix import utils, core
 from phoenix.batch_systems.batch_utils import detect_scheduler

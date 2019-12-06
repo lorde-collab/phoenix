@@ -6,11 +6,9 @@ import glob
 import os
 import shlex
 import subprocess
-import sys
 import datetime
 
 from phoenix import __version__
-from phoenix.batch_systems import batch_utils
 from phoenix.constants import (
     SUB_UPDATE_INTERVAL, SUBSTEP_TYPES, MEMLIM_DEFAULT)
 
@@ -121,33 +119,40 @@ def get_phoenix_steps(phoenix_directory):
             phoenix_steps[step] = step_name
     return phoenix_steps
 
-def run_shell_command(command_string, shell=False):
+def run_shell_command(command_string, shell=False, stdout=subprocess.PIPE,
+                      stderr=subprocess.PIPE):
     """ Executes a command and returns stdout, stderr, return_code.
     Args:
         command_string: Command to be executed
         shell (bool): Whether or not to use shell
+        stdout (?): Where to redirect stdout for subrpocess.run
+        stderr (?): Where to redirect stderr for subrpocess.run
     Returns:
-        stdout: stdout of command as a single string.
-        stderr: stderr of command as a single string.
-        return_code: integer return code of command.
+        stdout_str (str): stdout of command as a single string.
+        stderr_str (str): stderr of command as a single string.
+        return_code (int): integer return code of command.
     """
     command = shlex.split(command_string)
     if shell:
         command = command_string
     try:
-        proc = subprocess.run(command, stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE, shell=shell)
+        proc = subprocess.run(command, stdout=stdout, stderr=stderr,
+                              shell=shell)
     except FileNotFoundError:
         stdout = ""
         stderr = "Command '%s' not found"%(command[0])
-        return_code = 127 
+        return_code = 127
         return (stdout, stderr, return_code)
 
-    stdout = proc.stdout.decode('utf-8')
-    stderr = proc.stderr.decode('utf-8')
+    stdout_str = ""
+    stderr_str = ""
+    if proc.stdout:
+        stdout_str = proc.stdout.decode('utf-8')
+    if proc.stderr:
+        stderr_str = proc.stderr.decode('utf-8')
     return_code = proc.returncode
 
-    return (stdout, stderr, return_code)
+    return (stdout_str, stderr_str, return_code)
 
 def run_shell_command_wrapper(cmds_and_io):
     """ Wrapper to 'run_shell_command' to be used with multiprocessing.Pool
@@ -176,4 +181,3 @@ def run_shell_command_wrapper(cmds_and_io):
 
     fout.close()
     ferr.close()
-    

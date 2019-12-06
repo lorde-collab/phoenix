@@ -121,7 +121,8 @@ def phoenix_step(directory, step, outfile=None, errfile=None, force_qc=False):
         print("{} Running script {}".format(stat, phoenix_script), file=fout)
 
         os.chdir(directory)
-        (stdout, stderr, return_code) = utils.run_shell_command(phoenix_script)
+        (stdout, stderr, return_code) = \
+            utils.run_shell_command(phoenix_script, stdout=fout, stderr=ferr)
         os.chdir(original_dir)
         print(stdout, file=fout)
         print(stderr, file=ferr)
