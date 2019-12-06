@@ -37,7 +37,7 @@ def phoenix_run(directory, starting_step=None, force_qc=False, email_list=None):
     print("[RUNNER] Date: ", datetime.datetime.now())
     for step in sorted(steps.keys()):
         print("[RUNNER] {} Starting step {} / {}: {}".format(
-            datetime.datetime.now(), step, len(steps), steps[step]))
+            datetime.datetime.now(), step, max(steps), steps[step]))
         if starting_step and starting_step > step:
             print("[RUNNER]: Skipping step {}".format(step))
             continue
@@ -55,7 +55,7 @@ def phoenix_run(directory, starting_step=None, force_qc=False, email_list=None):
             sys.exit(return_code)
         else:
             print("[RUNNER] {} Finished step {} / {}: {}".format(
-                datetime.datetime.now(), step, len(steps), steps[step]))
+                datetime.datetime.now(), step, max(steps), steps[step]))
 
 def phoenix_step(directory, step, outfile=None, errfile=None, force_qc=False):
     """ Run a single phoenix step.

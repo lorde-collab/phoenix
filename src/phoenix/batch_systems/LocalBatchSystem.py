@@ -11,7 +11,6 @@ from phoenix import utils
 class LocalBatchSystem(AbstractBatchSystem):
     """ Local Batch System class """
     def __init__(self):
-        print("Hello from Local!")
         super(LocalBatchSystem, self).__init__('Local')
 
     def sub_array_for_cmdfile(self, args):
@@ -19,7 +18,8 @@ class LocalBatchSystem(AbstractBatchSystem):
         Args:
             cmdfile (str): Path to a command file.
         Returns:
-            mpres (multiprocessing.pool.MapResult): The multiprocessing object.
+            (list): [multiprocessing.pool.MapResult]: The multiprocessing
+                object in list form.
         """
 
         pid = os.getpid()
@@ -27,8 +27,10 @@ class LocalBatchSystem(AbstractBatchSystem):
 
         for eo_file in [args.stdout, args.stderr]:
             logdir = os.path.dirname(eo_file)
-            os.makedirs(logdir, exist_ok=True)
+            if logdir:
+                os.makedirs(logdir, exist_ok=True)
 
+        # For local we ignore split cutoff. Any reason to use this?
         cmds = open(args.cmdfile).read().splitlines()
         outfiles = []
         errfiles = []
@@ -39,14 +41,10 @@ class LocalBatchSystem(AbstractBatchSystem):
             errfile = args.stderr.replace("%J", pid_str).replace("%I", icmd_str)
             wrapper_args.append([cmd, outfile, errfile])
 
-        '''
         pool = Pool(processes=args.ncores)
         mpres = pool.map_async(utils.run_shell_command_wrapper, wrapper_args)
 
-        mpres.wait()
-
-        return mpres
-        '''
+        return [mpres]
 
 
 
