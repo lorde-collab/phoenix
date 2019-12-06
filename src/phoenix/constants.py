@@ -10,3 +10,4 @@ SUBSTEP_TYPES = {
     4: 'createcmdfile',
     5: 'submit'
 }
+SPLIT_CUTOFF = 4000

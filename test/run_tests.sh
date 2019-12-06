@@ -16,7 +16,7 @@ export PATH=$(pwd)/../scripts:$PATH
 
 #exit 0
 
-coverage run -m --source ../src/phoenix unittest discover unit_tests -p "*test.py" -b
+coverage run -m --source ../src/phoenix unittest discover unit_tests -p "batch_test.py" -b
 coverage_report=$(mktemp)
 coverage report -m > $coverage_report
 cat $coverage_report

@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
+from phoenix.constants import SPLIT_CUTOFF
+
 class AbstractBatchSystem:
     """ Generic job type """
     def __init__(self, system):
         self._system = system
-        self._split_cutoff = 4000
+        self._split_cutoff = SPLIT_CUTOFF
 
         self.__fail_exit_reasons = []
 
@@ -19,16 +21,6 @@ class AbstractBatchSystem:
             jobid (int): Job id of the job.
         Returns:
             state (str): State of the job (Pend, Run, Done, Fail).
-        """
-        raise NotImplementedError()
-
-    def verbose_array_state(self, array_id):
-        """ Checks the state of the array with verbosity.
-        Args:
-            array_id (int): Job array id.
-        Returns:
-            stdout (str): stdout of check.
-            stderr (str): stderr of check.
         """
         raise NotImplementedError()
 
@@ -71,6 +63,7 @@ class AbstractJob:
         # By default we don't know if it exited or not.
         self.__exit_reason = "?"
         self.__exit_code = "?"
+        self.__status = "?"
 
     def __str__(self):
         raise NotImplementedError()

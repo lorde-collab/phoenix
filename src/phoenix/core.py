@@ -124,8 +124,6 @@ def phoenix_step(directory, step, outfile=None, errfile=None, force_qc=False):
         (stdout, stderr, return_code) = \
             utils.run_shell_command(phoenix_script, stdout=fout, stderr=ferr)
         os.chdir(original_dir)
-        print(stdout, file=fout)
-        print(stderr, file=ferr)
         if return_code != 0:
             print("{} Substep FAILURE".format(stat), file=fout)
             return return_code

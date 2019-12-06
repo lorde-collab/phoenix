@@ -4,13 +4,15 @@
 import argparse
 import glob
 import os
+import io
+import sys
 import shlex
 import subprocess
 import datetime
 
 from phoenix import __version__
 from phoenix.constants import (
-    SUB_UPDATE_INTERVAL, SUBSTEP_TYPES, MEMLIM_DEFAULT)
+    SUB_UPDATE_INTERVAL, SUBSTEP_TYPES, MEMLIM_DEFAULT, SPLIT_CUTOFF)
 
 def now():
     """ Simple method to get current datetime """
@@ -43,6 +45,7 @@ def get_args(argv):
     sub.add_argument("-K", "--hang", action="store_true")
     sub.add_argument("-k", "--killall", action="store_true")
     sub.add_argument("-s", "--system", type=str, default="")
+    sub.add_argument("-S", "--split_cutoff", type=int, default=4000)
     sub.add_argument("-o", "--stdout", type=str, required=True)
     sub.add_argument("-e", "--stderr", type=str, required=True)
     sub.add_argument("-i", "--input", dest="cmdfile", type=str, required=True)
@@ -125,13 +128,22 @@ def run_shell_command(command_string, shell=False, stdout=subprocess.PIPE,
     Args:
         command_string: Command to be executed
         shell (bool): Whether or not to use shell
-        stdout (?): Where to redirect stdout for subrpocess.run
-        stderr (?): Where to redirect stderr for subrpocess.run
+        stdout (?): Where to redirect stdout for subprocess.run
+        stderr (?): Where to redirect stderr for subprocess.run
     Returns:
         stdout_str (str): stdout of command as a single string.
         stderr_str (str): stderr of command as a single string.
         return_code (int): integer return code of command.
     """
+
+    # Needed for running 'coverage' with buffering on - if we run with
+    # buffering then sys.stdout turns into a StringIO class and can't
+    # be passed to subprocess.run
+    if not isinstance(stdout, io.TextIOWrapper):
+        stdout = subprocess.PIPE
+    if not isinstance(stderr, io.TextIOWrapper):
+        stderr = subprocess.PIPE
+
     command = shlex.split(command_string)
     if shell:
         command = command_string

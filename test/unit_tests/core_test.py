@@ -4,6 +4,7 @@
 import unittest
 import glob
 import os
+import io
 import sys
 
 import phoenix.core as core

@@ -10,7 +10,6 @@ from phoenix.batch_systems import AbstractBatchSystem, AbstractJob
 class LSFBatchSystem(AbstractBatchSystem):
     """ LSF Batch System class """
     def __init__(self):
-        print("Hello from LSF!")
         super(LSFBatchSystem, self).__init__('LSF')
 
         self.__flag_params = {
@@ -34,10 +33,10 @@ class LSFBatchSystem(AbstractBatchSystem):
         argsd = args.__dict__
         array_ids = []
 
-        print("args:", args)
         for eo_file in [args.stdout, args.stderr]:
             logdir = os.path.dirname(eo_file)
-            os.makedirs(logdir, exist_ok=True)
+            if logdir:
+                os.makedirs(logdir, exist_ok=True)
 
         # Create commands for each bsub array needed
         split_cutoff = argsd.get('split_cutoff', self._split_cutoff)
@@ -47,7 +46,6 @@ class LSFBatchSystem(AbstractBatchSystem):
         if nlines < split_cutoff:
             jid_end = nlines
         cmd = self._get_bsub_command(argsd, jid_beg, jid_end)
-        print(cmd)
         (stdout, stderr, return_code) = utils.run_shell_command(cmd)
         # NOTE: ST Jude specific LSF output:
         # "Job <JOBID> is submitted to queue <QUEUE>"
@@ -58,7 +56,6 @@ class LSFBatchSystem(AbstractBatchSystem):
             if jid_end > nlines:
                 jid_end = nlines
             cmd = self._get_bsub_command(argsd, jid_beg, jid_end)
-            print(cmd)
             (stdout, stderr, return_code) = utils.run_shell_command(cmd)
             array_ids.append(stdout.split('<')[1].split('>')[0])
 
@@ -104,7 +101,6 @@ class LSFBatchSystem(AbstractBatchSystem):
         job = LSFJob()
         job.from_bjobs(joblines)
         jobs[(job.jobid, job.jobindex)] = job
-
 
         return jobs
 
@@ -179,6 +175,7 @@ class LSFJob(AbstractJob):
 
     @property
     def finished(self):
+        # TODO: Should this move to AbstractJob?
         if self.status in self.__run_pend_statuses:
             # Running or pending ... NOT finished
             return False
@@ -186,9 +183,12 @@ class LSFJob(AbstractJob):
             self.exit_reason in self.__recoverable_reasons:
             # Failed but recoverable ... NOT finished
             return False
-
-        # Status not in RUN or PEND, and it is recoverable ... finished
-        return True
+        elif self.status in ["EXIT", "DONE"]:
+            # Succeeded or failed without ability to recover ... Finished
+            return True
+        
+        print("Unknown case for LSF job. Status is {}".format(self.status))
+        return False
 
     @property
     def pending(self):
@@ -214,10 +214,6 @@ class LSFJob(AbstractJob):
         year = datetime.datetime.now().year
 
         for line in self.__joblines:
-            '''
-            if 'loadSched' not in line and 'loadStop' not in line and line and not '          ' in line:
-                print(line)
-            '''
             if 'Job <' in line:
                 self.jobid = int(line.split('Job <')[1].split('[')[0])
                 self.jobindex = int(line.split('Job <')[1].split('[')[1]\
