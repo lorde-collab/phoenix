@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+""" Init """
 
 from phoenix.batch_systems.AbstractBatchSystem import AbstractBatchSystem
 from phoenix.batch_systems.AbstractBatchSystem import AbstractJob

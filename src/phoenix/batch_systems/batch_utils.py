@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+""" Utilities used for batch_systems module """
 
 from phoenix import utils
 

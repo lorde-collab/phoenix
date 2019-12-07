@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
+"""
+Module for running phoenix without any queueing system (local) while still
+Treating it as a batch system.
+"""
 
 import os
-import sys
+from multiprocessing import Pool
 
 from phoenix.batch_systems import AbstractBatchSystem
-from multiprocessing import Pool
 from phoenix import utils
 
 
+#pylint: disable=abstract-method
 class LocalBatchSystem(AbstractBatchSystem):
     """ Local Batch System class """
     def __init__(self):
@@ -45,6 +49,3 @@ class LocalBatchSystem(AbstractBatchSystem):
         mpres = pool.map_async(utils.run_shell_command_wrapper, wrapper_args)
 
         return [mpres]
-
-
-

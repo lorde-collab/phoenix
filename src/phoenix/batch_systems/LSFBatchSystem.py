@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
+""" Module for the LSF batch system """
 
-import tempfile
 import os
 import sys
-import datetime
 from phoenix import utils
 from phoenix.batch_systems import AbstractBatchSystem, AbstractJob
 
@@ -47,6 +46,14 @@ class LSFBatchSystem(AbstractBatchSystem):
             jid_end = nlines
         cmd = self._get_bsub_command(argsd, jid_beg, jid_end)
         (stdout, stderr, return_code) = utils.run_shell_command(cmd)
+        if return_code != 0:
+            print("ERROR: Unable to submit LSF job.")
+            print("bsub command: {}".format(cmd))
+            print("exited with code {}".format(return_code))
+            print("STDOUT:")
+            print(stdout)
+            print("stderr:")
+            print(stderr)
         # NOTE: ST Jude specific LSF output:
         # "Job <JOBID> is submitted to queue <QUEUE>"
         array_ids.append(stdout.split('<')[1].split('>')[0])
@@ -61,7 +68,7 @@ class LSFBatchSystem(AbstractBatchSystem):
 
         return array_ids
 
-    def jobs_from_arrays(self, job_arrays):
+    def jobs_from_arrays(self, array_ids):
         """ Creates a set of Jobs from the verbose output of the arrays.
         Args:
             array_ids (list): List of Job array ids.
@@ -71,19 +78,19 @@ class LSFBatchSystem(AbstractBatchSystem):
 
         jobs = {}
 
-        for job_array in job_arrays:
-            jobs.update(self.jobs_from_array(job_array))
+        for array_id in array_ids:
+            jobs.update(self.jobs_from_array(array_id))
 
         return jobs
 
-    def jobs_from_array(self, job_array):
+    def jobs_from_array(self, array_id):
         """ Creates a set of Jobs from the verbose output of the arrays.
         Args:
-            array_ids (int): Array id.
+            array_id (int): Array id.
         Returns:
             jobs (dict): Dictionary of Job objects.
         """
-        cmd = "bjobs -al {}".format(job_array)
+        cmd = "bjobs -al {}".format(array_id)
         (stdout, stderr, return_code) = utils.run_shell_command(cmd)
         outlines = stdout.replace("\n                     ", "").splitlines()
 
@@ -136,7 +143,7 @@ class LSFBatchSystem(AbstractBatchSystem):
 class LSFJob(AbstractJob):
     """ LSF Job """
     def __init__(self):
-        super(LSFJob, self).__init__('LSF')
+        super(LSFJob, self).__init__()
 
         self.__resreq = None
         self.__joblines = []
@@ -171,7 +178,11 @@ class LSFJob(AbstractJob):
             return False
         elif self.exit_reason == "TERM_MEMLIMIT":
             print("Working to recover job failed due to memory limit")
+            print("TODO!")
             sys.exit(1)
+
+        print("WARNING: End of 'recover' function reached.")
+        return None
 
     @property
     def finished(self):
@@ -186,8 +197,10 @@ class LSFJob(AbstractJob):
         elif self.status in ["EXIT", "DONE"]:
             # Succeeded or failed without ability to recover ... Finished
             return True
-        
+
         print("Unknown case for LSF job. Status is {}".format(self.status))
+        for jobline in self.__joblines:
+            print("JOBLINE: {}".format(jobline))
         return False
 
     @property
@@ -211,8 +224,6 @@ class LSFJob(AbstractJob):
         """
         self.__joblines = joblines
 
-        year = datetime.datetime.now().year
-
         for line in self.__joblines:
             if 'Job <' in line:
                 self.jobid = int(line.split('Job <')[1].split('[')[0])
@@ -224,6 +235,7 @@ class LSFJob(AbstractJob):
                     setattr(self, fun, val)
 
     def __str__(self):
+        """ Return job object as string """
         rstring = ""
         #for jobline in self.__joblines:
         #    rstring += jobline+"\n"
@@ -245,8 +257,9 @@ class LSFJob(AbstractJob):
 
     @property
     def resreq(self):
+        """ Resource requirements (getter) """
         return self.__resreq
     @resreq.setter
     def resreq(self, resreq):
+        """ Resource requirements (setter) """
         self.__resreq = resreq
-
