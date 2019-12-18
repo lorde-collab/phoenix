@@ -65,13 +65,9 @@ class LSFBatchSystem(AbstractBatchSystem):
         cmd = self._get_bsub_command(argsd, jid_beg, jid_end)
         (stdout, stderr, return_code) = utils.run_shell_command(cmd)
         if return_code != 0:
-            print("ERROR: Unable to submit LSF job.")
-            print("bsub command: {}".format(cmd))
-            print("exited with code {}".format(return_code))
-            print("STDOUT:")
-            print(stdout)
-            print("stderr:")
-            print(stderr)
+            print("ERROR: Unable to submit LSF job. Bsub command: {}"\
+                  .format(cmd), file=sys.stderr)
+            sys.exit(return_code)
         # NOTE: ST Jude specific LSF output:
         # "Job <JOBID> is submitted to queue <QUEUE>"
         array_ids.append(stdout.split('<')[1].split('>')[0])

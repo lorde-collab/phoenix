@@ -55,6 +55,10 @@ class AbstractBatchSystem:
         """
         raise NotImplementedError()
 
+    @property
+    def system(self):
+        return self._system
+
 class AbstractJob:
     """ Generic job type """
     def __init__(self):

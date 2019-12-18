@@ -33,7 +33,7 @@ def get_scheduler(scheduler_name):
         scheduler (?): Scheduler specific class from BatchSystem.
     """
 
-    if scheduler_name in ['local']:
+    if scheduler_name in ['local', 'Local']:
         scheduler = batch_systems.Local()
     elif scheduler_name in ['lsf', 'LSF']:
         scheduler = batch_systems.LSF()
@@ -154,7 +154,6 @@ def track_and_resub(args, job_arrays):
               "{2:5d} {3:5d} {4:5d} {5:5d}".format(
                   utils.now().strftime("%Y-%m-%d %H:%M:%S"), npend, nrun,
                   ndone, nrequeued, nfailed))
-
 
         sys.stdout.flush()
         time.sleep(args.update_interval)

@@ -76,6 +76,22 @@ class LSFSchedulerTest(unittest.TestCase):
         jobs = lsf.jobs_from_arrays(array_ids)
         self.assertEqual(len(jobs), 4)
 
+    def test_real_str(self):
+        lsf = LSF()
+        cmdfile = self.datadir + "/cmdfiles/sleeper.sh"
+        argv = ['sub', '-P', 'project', '-q', 'normal', '-K',
+                '-M', '500', '-o', 'tmp/out.%J.%I.txt', '-e',
+                'tmp/err.%J.%I.txt', '-S', '3', '-i', cmdfile]
+
+        args = utils.get_args(argv)
+
+        array_ids = lsf.sub_array_for_cmdfile(args)
+        jobs = lsf.jobs_from_arrays(array_ids)
+        for job_key in jobs:
+            job = jobs[job_key]
+            job_str = str(job)
+
+
 class LSFJobTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -94,3 +110,7 @@ class LSFJobTest(unittest.TestCase):
     def test_finished(self):
         job = LSFJob()
         self.assertFalse(job.finished)
+
+    def test_raw_str(self):
+        job = LSFJob()
+        foo = str(job)

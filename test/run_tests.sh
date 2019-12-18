@@ -8,6 +8,7 @@ export PYTHONPATH=$(pwd)/../src:$PYTHONPATH
 export PATH=$(pwd)/../scripts:$PATH
 
 unset LSB_DEFAULTQUEUE
+export LSB_DEFAULTQUEUE=hpcf_test
 
 #phoenix run -d data/phoenix_dirs/simple_example
 
@@ -19,6 +20,7 @@ unset LSB_DEFAULTQUEUE
 #exit 0
 
 coverage run -m --source ../src/phoenix unittest discover unit_tests -p "*test.py" -b
+#coverage run -m --source ../src/phoenix unittest discover unit_tests -p "psub_test.py" -b
 coverage_report=$(mktemp)
 coverage report -m > $coverage_report
 cat $coverage_report
