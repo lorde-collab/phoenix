@@ -23,6 +23,7 @@ import sys
 import time
 
 from phoenix import batch_systems
+from phoenix.batch_systems import batch_utils
 from phoenix import utils
 
 def get_scheduler(scheduler_name):
@@ -62,8 +63,11 @@ def submit_array(args):
     """
     job_arrays = []
     print("Submitting job arrays from input file")
+    system = args.system
+    if not system:
+        system = batch_utils.detect_scheduler()
 
-    scheduler = get_scheduler(args.system)
+    scheduler = get_scheduler(system)
     job_arrays = scheduler.sub_array_for_cmdfile(args)
 
     return job_arrays
@@ -91,10 +95,15 @@ def track_and_resub(args, job_arrays):
 
     print("job arrays: ", job_arrays)
 
-    scheduler = get_scheduler(args.system)
+    system = args.system
+    if not system:
+        system = batch_utils.detect_scheduler()
+
+    scheduler = get_scheduler(system)
     jobs = scheduler.jobs_from_arrays(job_arrays)
 
     sys.stdout.flush()
+    failed_indices = []
 
     # Loop until all jobs are finished, or a single job has failed and the
     # killall option is specified.
@@ -104,8 +113,8 @@ def track_and_resub(args, job_arrays):
         sys.stdout.flush()
 
         tjobs = scheduler.jobs_from_arrays(job_arrays)
-        for (k, tjob) in tjobs.items():
-            print(k, tjob)
+        #for (k, tjob) in tjobs.items():
+        #    print(k, tjob)
         sys.stdout.flush()
         npend = 0
         nrequeued = 0
@@ -146,6 +155,8 @@ def track_and_resub(args, job_arrays):
                     nrequeued += 1
                 else:
                     nfailed += 1
+
+                # TODO: Log this in failed_indicies
             else:
                 print("[WARN] {} job {}[{}] has unknown status {}".format(
                     utils.now(), job.jobid, job.jobindex, job.status))
@@ -156,6 +167,14 @@ def track_and_resub(args, job_arrays):
                   ndone, nrequeued, nfailed))
 
         sys.stdout.flush()
+        #print("job_array_unfinished ...")
+        #sys.stdout.flush()
+        #print(job_array_unfinished(jobs))
+        #sys.stdout.flush()
+        #print(":)")
+        #sys.stdout.flush()
         time.sleep(args.update_interval)
 
-    return []
+    #print("Returning")
+    #sys.stdout.flush()
+    return failed_indices
